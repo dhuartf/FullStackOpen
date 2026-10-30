@@ -4,21 +4,41 @@ const Button = ({ handleClick, text }) => (
   <button onClick={handleClick}>{text}</button>
 )
 
-const MostVotedAnecdote = ({ anecdotes, voteCount }) => {
-  const maxVotes = Math.max(...voteCount)
-  const maxIndex = voteCount.indexOf(maxVotes)
+const StatisticLine = ({ text, value }) => (
+  <tr>
+    <td>{text}</td>
+    <td>{value}</td>
+  </tr>
+)
 
+const Statistics = ({ good, neutral, bad }) => {
+  const all = good + neutral + bad
+  const average = (good - bad) / all
+  const positive = (good / all) * 100
 
-  if (maxVotes === 0) {
-    return <p>No votes yet</p>
+  if (all === 0) {
+    return (
+      <div>
+        <h1>statistics</h1>
+        <p>No feedback given</p>
+      </div>
+    )
   }
-
   return (
     <div>
-      <p>{anecdotes[maxIndex]}</p>
-      <p>has {maxVotes} votes</p>
+      <h1>statistics</h1>
+      <table>
+        <tbody>
+          <StatisticLine text="good" value={good} />
+          <StatisticLine text="neutral" value={neutral} />
+          <StatisticLine text="bad" value={bad} />
+          <StatisticLine text="all" value={all} />
+          <StatisticLine text="average" value={average} />
+          <StatisticLine text="positive" value={`${positive.toFixed(1)} %`} />
+        </tbody>
+      </table>
     </div>
-  )
+    )
 }
 
 
@@ -42,33 +62,30 @@ const App = () => {
   const handleNextClick = () => {
     const randomIndex = Math.floor(Math.random() * anecdotes.length)
     console.log('Random index:', randomIndex)
-    if (randomIndex === selected) {
-      handleNextClick()
-      return
+    if (randomIndex === selected) {handleNextClick() // Call the function recursively to get a new index
     }
-
     setSelected(randomIndex)
   }
 
-  const votes = Array(anecdotes.length).fill(0)
-  const [voteCount, setVoteCount] = useState(votes)
-  console.log('Vote count:', voteCount)
-  const handleVoteClick = () => {
-    const copy = [...voteCount]
-    copy[selected] += 1
-    console.log('Votes:', copy)
-    setVoteCount(copy)
-  }
+  // save clicks of each button to its own state
+  const [good, setGood] = useState(0)
+  const [neutral, setNeutral] = useState(0)
+  const [bad, setBad] = useState(0)
+
+  const handleGoodClick = () => setGood(good + 1)
+  const handleNeutralClick = () => setNeutral(neutral + 1)
+  const handleBadClick = () => setBad(bad + 1)
 
   return (
     <div>
       <h1> Anecdotes of the day</h1>
       <p>{anecdotes[selected]}</p>
-      <p>has {voteCount[selected]} votes</p>
-      <Button handleClick={handleVoteClick} text="vote" />
       <Button handleClick={handleNextClick} text="next anecdote" />
-      <h1> Anecdote with the most votes</h1>
-      <MostVotedAnecdote anecdotes={anecdotes} voteCount={voteCount} />
+      <h1>give feedback</h1>
+      <Button handleClick={handleGoodClick} text="good" />
+      <Button handleClick={handleNeutralClick} text="neutral" />
+      <Button handleClick={handleBadClick} text="bad" />
+      <Statistics good={good} neutral={neutral} bad={bad} />
     </div>
   )
 }
